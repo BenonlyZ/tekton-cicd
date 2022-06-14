@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: test-build-push
+spec:
+  resources:
+  - name: test-repo
+    type: git
+  - name: repo
+    type: git
+  tasks:
+  - name: task2
+    taskRef:
+      name: task2   #第一个task模板名称
+    resources:
+      inputs:
+      - name: test-repo      
+        resource: test-repo  # resources.name名称
+  - name: build-and-push
+    taskRef:
+      name: build-and-push  #第二个task模板名称
+    runAfter:
+    - task2            # 在task2之后执行
+    resources:
+      inputs:
+      - name: repo      
+        resource: repo  # resources.name资源名称
+

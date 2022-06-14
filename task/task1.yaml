@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-and-push
+spec:
+  resources:
+    inputs:
+    - name: repo
+      type: git
+  # 这是一个github拉取代码打包成镜像push到dockerhub的Task
+  steps:
+  - name: build-and-push
+    image: cnych/kaniko-executor:v0.22.0
+    env:
+    - name: DOCKER_CONFIG
+      value: /tekton/home/.docker
+    command:
+    - /kaniko/executor
+    - --dockerfile=Dockerfile
+    - --context=/workspace/repo  #最后一级目录需要和resources.inputs.name一致
+    - --destination=zhbencom/tekton-test:20220606_02  #第一集目录为你的dockerhub username

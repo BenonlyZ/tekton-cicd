@@ -1,0 +1,19 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: build-and-push
+spec:
+  resources:
+    inputs:
+    - name: repo
+      resourceSpec:
+        params:
+        - name: revision
+          value: master
+        - name: url
+          value: https://github.com/BenonlyZ/redis-hb
+        type: git
+  serviceAccountName: build-sa
+  taskRef:
+    name: build-and-push
+

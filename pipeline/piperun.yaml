@@ -1,0 +1,26 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: test-build-push-run
+spec:
+  serviceAccountName: build-sa
+  pipelineRef:
+    name: test-build-push
+  resources:
+    - name: repo
+      resourceSpec:
+        type: git
+        params:
+          - name: revision
+            value: master
+          - name: url
+            value: https://github.com/BenonlyZ/redis-hb.git
+    - name: test-repo
+      resourceSpec:
+        type: git
+        params:
+          - name: revision
+            value: main
+          - name: url
+            value: https://github.com/BenonlyZ/calicogo.git
+

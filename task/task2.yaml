@@ -1,0 +1,14 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: task2
+spec:
+  resources:
+    inputs:
+    - name: task2-repo
+      type: git
+  steps:
+    - name: task2-step1
+      image: cnych/kaniko-executor:v0.22.0
+      workingDir: /workspace/task2-repo
+      command: ["go"]
