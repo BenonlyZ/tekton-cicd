@@ -1,0 +1,58 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: github-listener
+spec:
+  serviceAccountName: tekton-triggers-github-sa
+  triggers:
+    - name: github-push-events-trigger
+      interceptors:
+        - name: verify-github-payload
+          ref:
+            name: github
+            kind: ClusterInterceptor
+          params:
+            - name: secretRef  # 引用 github-secret 的 Secret 对象中的 secretToken 的值
+              value:
+                secretName: github-secret 
+                secretKey: secretToken
+            - name: eventTypes
+              value: 
+                - Push Hook  # 只接收 github Push 事件
+      bindings:
+        - name: gitrevision
+          value: $(body.checkout_sha)
+        - name: gitrepositoryurl
+          value: $(body.repository.git_http_url)
+      template:
+        spec:
+          params:
+            - name: gitrevision
+            - name: gitrepositoryurl
+          resourcetemplates:
+            - apiVersion: tekton.dev/v1alpha1
+              kind: TaskRun
+              metadata:
+                generateName: github-run-
+              spec:
+                taskSpec:
+                  inputs:
+                    resources:
+                      - name: source
+                        type: git
+                  steps:
+                    - image: ubuntu
+                      script: |
+                        #! /bin/bash
+                        ls -al $(inputs.resources.source.path)
+                inputs:
+                  resources:
+                    - name: source
+                      resourceSpec:
+                        type: git
+                        params:
+                          - name: revision
+                            value: $(tt.params.gitrevision)
+                          - name: url
+                            value: $(tt.params.gitrepositoryurl)
+                            

@@ -1,2 +1,1 @@
-# tekton-cicd
-A tekton CICD practice.
+triggers/README.md
