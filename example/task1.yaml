@@ -1,0 +1,20 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: zhb-task1
+spec:
+  params:
+  - name: username
+  - name: extra
+  resources:
+    inputs:
+    - name: repo
+      type: git
+  steps:
+    - name: zhb-task1-step1
+      image: debian:11
+      workingDir: /workspace/repo
+      script: |
+        echo $(params.username)
+        echo $(params.extra)
+

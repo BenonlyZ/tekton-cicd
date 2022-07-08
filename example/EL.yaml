@@ -1,0 +1,25 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: zhb-listener
+spec:
+  serviceAccountName: tekton-triggers-gitlab-sa
+  triggers:
+    - name: zhb-events-trigger
+      interceptors:
+        - name: today-payload
+          ref:
+            name: gitea
+            kind: ClusterInterceptor
+          params:
+            - name: secretRef  # 引用 gitlab-secret 的 Secret 对象中的 secretToken 的值
+              value:
+                secretName: gitlab-secret 
+                secretKey: secretToken
+            - name: eventTypes
+              value: 
+                - Push Hook  # 只接收 GitLab Push 事件
+      bindings:
+        - ref: zhb-push-binding
+      template:
+        ref: zhb-echo-template

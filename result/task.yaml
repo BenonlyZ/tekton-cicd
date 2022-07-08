@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: result-task
+spec:
+  results:
+    - name: datetime
+  steps:
+  - name: result-step1
+    image: debian:11
+    script: |
+      time=`date +%Y%m%d-%H%M%S`
+      echo -n $time | tee $(results.datetime.path)
+      echo "我是step1，执行结果已经传递完毕"
+  - name: result-step2
+    image: debian:11
+    script: |
+      echo "我是step2,步骤1结果为:"
+      cat $(results.datetime.path)
+
+##注意$(results.datetime.path)是目录，读取内容时用cat

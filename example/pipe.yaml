@@ -1,0 +1,34 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: zhb-pipe
+spec:
+  params:
+  - name: username
+    type: string
+  - name: extra
+    type: string
+  resources:
+  - name: repo
+    type: git
+  tasks:
+  - name: zhb-task1
+    taskRef:
+      name: zhb-task1  #第一个task模板名称
+    params:
+    - name: username
+      value: $(params.username)
+    - name: extra
+      value: $(params.extra)
+    resources:
+      inputs:
+      - name: repo      
+        resource: repo  # resources.name名称
+  - name: zhb-task2
+    taskRef:
+      name: zhb-task2   #第二个task模板名称
+    params:
+    - name: extra
+      value: $(params.extra)
+  
+#只需修改底层，上层引用不需要修改也能生效

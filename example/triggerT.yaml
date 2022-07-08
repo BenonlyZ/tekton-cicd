@@ -1,0 +1,41 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: zhb-echo-template
+  annotations:
+    triggers.tekton.dev/old-escape-quotes: "true"
+spec:
+  params:  # 定义参数，和 TriggerBinding 中的保持一致
+    - name: gitrevision
+    - name: gitrepositoryurl
+    - name: username
+    - name: extra
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun  # 定义 TaskRun 模板
+    metadata:
+      generateName: zhb-pipeline-run-  # TaskRun 名称前缀
+    spec:
+      serviceAccountName: tekton-triggers-gitlab-sa
+      pipelineRef:
+        name: zhb-pipe
+      params:
+      - name: username
+        value: $(tt.params.username)
+      - name: extra
+        value: $(tt.params.extra)
+      resources:
+      - name: repo
+        resourceSpec:
+          type: git
+          params:
+          - name: revision
+            value: $(tt.params.gitrevision)
+          - name: url
+            value: $(tt.params.gitrepositoryurl)
+  
+
+
+
+
+

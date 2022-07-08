@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: gitea-interceptor
+    app.kubernetes.io/name: gitea-interceptor
+  name: gitea-interceptor
+  namespace: tekton-pipelines
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gitea-interceptor
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: gitea-interceptor
+        app.kubernetes.io/name: gitea-interceptor
+    spec:
+      containers:
+        - command:
+          - /giteainterceptor
+          args:
+            - '-logtostderr'
+            - '-stderrthreshold'
+            - INFO
+          env:
+            - name: SYSTEM_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: CONFIG_LOGGING_NAME
+              value: config-logging-triggers
+            - name: CONFIG_OBSERVABILITY_NAME
+              value: config-observability-triggers
+            - name: METRICS_DOMAIN
+              value: tekton.dev/triggers
+          image: tekton-interceptor-client:latest
+          imagePullPolicy: Always
+          name: tekton-interceptor
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - all
+            runAsGroup: 65532
+            runAsUser: 65532
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: tekton-triggers-core-interceptors
+      serviceAccountName: tekton-triggers-core-interceptors
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: gitea-interceptor
+    app.kubernetes.io/name: gitea-interceptor
+  name: gitea-interceptor
+  namespace: tekton-pipelines
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/name: gitea-interceptor
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: ClusterInterceptor
+metadata:
+  name: gitea
+spec:
+  clientConfig:
+    #配置外部拦截器的svc,可编写自己的逻辑判断过滤器是否继续
+    #也可配置拦截器的 url: "http://***/ready"
+    #注意事件是post请求,如果有配置pod的健康检查(httpGET),注意区分
+    service:
+      name: gitea-interceptor
+      namespace: tekton-pipelines
+      path: "/ready" 
+      port: 80
+

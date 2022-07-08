@@ -1,0 +1,14 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: zhb-push-binding
+spec:
+  params:
+  - name: gitrevision
+    value: $(body.checkout_sha)
+  - name: gitrepositoryurl
+    value: $(body.repository.git_http_url)
+  - name: username
+    value: $(body)
+  - name: extra
+    value: $(extensions)

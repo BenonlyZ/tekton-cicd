@@ -1,0 +1,13 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: zhb-task2
+spec:
+  params:
+  - name: extra
+  steps:
+    - name: zhb-task2-step1
+      image: debian:11
+      script: |
+        echo "多任务测试"
+        echo $(params.extra)
