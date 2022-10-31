@@ -1,0 +1,59 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: golang-test
+  namespace: default
+spec:
+  # 如果配置触发器trigger时，这里的参数大部分为事件Body
+  params:
+  - name: projectId
+    type: string
+  - name: checkoutSHA
+    type: string
+  - name: Ref
+    type: string
+  - name: homePage
+    type: string
+  - name: userId
+    type: string
+  - name: userName
+    type: string
+  - name: userEmail
+    type: string
+  - name: extra
+    type: string
+  resources:
+  - name: repo
+    type: git
+  tasks:
+  #同一pipeline可以多个task
+  #多个task可以并行，也可以设置串行
+  - name: task-0
+    taskRef:
+      name: golang-test
+    params:
+    - name: projectId
+      value: $(params.projectId)
+    - name: checkoutSHA
+      value: $(params.checkoutSHA)
+    - name: Ref
+      value: $(params.Ref)
+    - name: homePage
+      value: $(params.homePage)
+    - name: userId
+      value: $(params.userId)
+    - name: userName
+      value: $(params.userName)
+    - name: userEmail
+      value: $(params.userEmail)
+    - name: extra
+      value: $(params.extra)
+    - name: taskRunName
+      value: "task-0"
+    - name: Host
+      value: "***"
+    resources:
+      inputs:
+      - name: repo      
+        resource: repo  
+  

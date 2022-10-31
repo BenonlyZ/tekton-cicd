@@ -1,0 +1,13 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: golang-test-trigger
+  namespace: default
+  labels:
+    type: golang-test
+spec:
+  bindings:
+    - ref: golang-test-binding
+  template:
+    ref: golang-test-template
+#Trigger类型用于triggerGroups绑定

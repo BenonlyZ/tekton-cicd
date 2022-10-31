@@ -1,0 +1,47 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: listener
+  namespace: default
+spec:
+  resources:
+    kubernetesResource:
+      serviceType: LoadBalancer
+  serviceAccountName: triggers-sa
+  # 拦截器组的用法很灵活，这里为不用的ClusterInterceptor绑定不同的trigger
+  # 也可以同一个ClusterInterceptor绑定多个trigger，则都会收到相同的事件
+  triggerGroups:
+  - interceptors:
+    - name: golangci-lint
+      ref:
+        name: golangci-lint
+        kind: ClusterInterceptor
+      params:
+        - name: eventTypes
+          value:
+            - Push Hook
+    triggerSelector:
+      namespaceSelector:
+        matchNames:
+        - default
+      labelSelector:
+        matchLabels:
+          type: golangci-lint
+  - interceptors:
+      - name: golang-test
+        ref:
+          name: golang-test
+          kind: ClusterInterceptor
+        params:
+          - name: eventTypes
+            value: 
+              - Push Hook  # 只接收 GitLab Push 事件
+    triggerSelector:
+      namespaceSelector:
+        matchNames:
+        - default
+      labelSelector:
+        matchLabels:
+          type: golang-test
+     
+  

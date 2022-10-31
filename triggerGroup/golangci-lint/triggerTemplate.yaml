@@ -1,0 +1,74 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: golang-test-template
+  namespace: default
+  annotations:
+    triggers.tekton.dev/old-escape-quotes: "true"
+spec:
+  params:  # 定义参数，和 TriggerBinding 中的保持一致
+    - name: gitrevision
+    - name: gitrepositoryurl
+    - name: projectId
+    - name: checkoutSHA
+    - name: Ref
+    - name: homePage
+    - name: userId
+    - name: userName
+    - name: userEmail
+    - name: extra
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun  # 定义 TaskRun 模板
+    metadata:
+      generateName: golang-test-run-  # TaskRun 名称前缀
+    spec:
+      serviceAccountName: triggers-sa
+      pipelineRef:
+        name: golang-test
+      # 这里可以设置运行task的pod模板
+      podTemplate:
+        dnsConfig:
+          nameservers:
+          - 100.XX.XX.XX
+        dnsPolicy: ClusterFirstWithHostNet
+        hostNetwork: true
+        nodeSelector:
+          dedicated: golangtest
+        tolerations:
+        - effect: NoSchedule
+          key: internal
+          operator: Exists  
+      params:
+      - name: projectId
+        value: $(tt.params.projectId)
+      - name: checkoutSHA
+        value: $(tt.params.checkoutSHA)
+      - name: Ref
+        value: $(tt.params.Ref)
+      - name: homePage
+        value: $(tt.params.homePage)
+      - name: userId
+        value: $(tt.params.userId)
+      - name: userName
+        value: $(tt.params.userName)
+      - name: userEmail
+        value: $(tt.params.userEmail)
+      - name: extra
+        value: $(tt.params.extra)
+      resources:
+      - name: repo
+        resourceSpec:
+          type: git
+          params:
+          - name: revision
+            value: $(tt.params.gitrevision)
+          - name: url
+            value: $(tt.params.gitrepositoryurl)
+      timeout: 1h0m0s
+  
+
+
+
+
+
